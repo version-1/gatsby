@@ -1,13 +1,55 @@
-import moment, { MomentInput, unitOfTime, LocaleSpecifier } from "moment"
+import isFnsDate from "date-fns/isDate"
+import format from "date-fns/format"
+import formatDistanceToNow from "date-fns/formatDistanceToNow"
+import differenceInYears from "date-fns/differenceInYears"
+import differenceInQuarters from "date-fns/differenceInQuarters"
+import differenceInMonths from "date-fns/differenceInMonths"
+import differenceInWeeks from "date-fns/differenceInWeeks"
+import differenceInDays from "date-fns/differenceInDays"
+import differenceInHours from "date-fns/differenceInHours"
+import differenceInMinutes from "date-fns/differenceInMinutes"
+import differenceInSeconds from "date-fns/differenceInSeconds"
+import differenceInMilliseconds from "date-fns/differenceInMilliseconds"
 import { GraphQLScalarType, Kind, GraphQLFieldConfig } from "graphql"
 import { oneLine } from "common-tags"
+import * as locales from "date-fns/locale"
+import { addMinutes } from "date-fns"
+
+type Difference =
+  | "quarter"
+  | "quarters"
+  | "Q"
+  | "year"
+  | "years"
+  | "y"
+  | "month"
+  | "months"
+  | "M"
+  | "week"
+  | "weeks"
+  | "w"
+  | "day"
+  | "days"
+  | "d"
+  | "hour"
+  | "hours"
+  | "h"
+  | "minute"
+  | "minutes"
+  | "m"
+  | "second"
+  | "seconds"
+  | "s"
+  | "millisecond"
+  | "milliseconds"
+  | "ms"
 
 interface IFormatDateArgs {
   date?: Date
   fromNow?: boolean
   formatString?: string
-  difference?: unitOfTime.Diff
-  locale?: LocaleSpecifier
+  difference?: Difference
+  locale?: string
 }
 interface IDateResolverOption {
   locale?: string
@@ -203,35 +245,81 @@ export function looksLikeADate(value?: string): boolean {
  * @param {*} value
  * @return {boolean}
  */
-export function isDate(value: MomentInput): boolean {
-  const momentDate = moment.utc(value, ISO_8601_FORMAT, true)
-  return typeof value !== `number` && momentDate.isValid()
+export function isDate(value: Date | string | number): boolean {
+  return typeof value !== `number` && isFnsDate(value)
 }
+
+const getDiff = (date: Date, difference: Difference): number => {
+  switch (difference) {
+    case `quarter`:
+    case `quarters`:
+    case `Q`:
+      return differenceInQuarters(new Date(), date)
+    case `year`:
+    case `years`:
+    case `y`:
+      return differenceInYears(new Date(), date)
+    case `month`:
+    case `months`:
+    case `M`:
+      return differenceInMonths(new Date(), date)
+    case `week`:
+    case `weeks`:
+    case `w`:
+      return differenceInWeeks(new Date(), date)
+    case `day`:
+    case `days`:
+    case `d`:
+      return differenceInDays(new Date(), date)
+    case `hour`:
+    case `hours`:
+    case `h`:
+      return differenceInHours(new Date(), date)
+    case `minute`:
+    case `minutes`:
+    case `m`:
+      return differenceInMinutes(new Date(), date)
+    case `second`:
+    case `seconds`:
+    case `s`:
+      return differenceInSeconds(new Date(), date)
+    case `milliseconds`:
+    case `millisecond`:
+    case `ms`:
+      return differenceInMilliseconds(new Date(), date)
+    default:
+      return 0
+  }
+}
+
+// ref: https://github.com/date-fns/date-fns/blob/master/docs/unicodeTokens.md
+const toSimpleUnicodeToken = (formatString: string): string =>
+  [`YYYY`, `YY`, `DD`, `D`].reduce(
+    (acc, target) =>
+      acc.replace(new RegExp(target, `g`), target.toLocaleLowerCase()),
+    formatString
+  )
 
 const formatDate = ({
   date,
   fromNow,
   difference,
   formatString,
-  locale = `en`,
+  locale = `en-US`,
 }: IFormatDateArgs): string | number => {
-  const normalizedDate = JSON.parse(JSON.stringify(date))
-  if (formatString) {
-    return moment
-      .utc(normalizedDate, ISO_8601_FORMAT, true)
-      .locale(locale)
-      .format(formatString)
-  } else if (fromNow) {
-    return moment
-      .utc(normalizedDate, ISO_8601_FORMAT, true)
-      .locale(locale)
-      .fromNow()
-  } else if (difference) {
-    return moment().diff(
-      moment.utc(normalizedDate, ISO_8601_FORMAT, true).locale(locale),
-      difference
-    )
+  if (date) {
+    const utc = addMinutes(date, date.getTimezoneOffset())
+    if (formatString) {
+      return format(utc, toSimpleUnicodeToken(formatString), {
+        locale: locales[locale],
+      })
+    } else if (fromNow) {
+      return formatDistanceToNow(utc, { locale: locales[locale] })
+    } else if (difference) {
+      return getDiff(utc, difference)
+    }
   }
+  const normalizedDate = JSON.parse(JSON.stringify(date))
   return normalizedDate
 }
 
