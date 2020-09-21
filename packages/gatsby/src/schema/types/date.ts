@@ -225,22 +225,27 @@ const looksLikeDateEndRegex = /(\d|Z)$/
 
 const baseDateInstance = new Date()
 
+const _parse = (value: string): Date => {
+  if (isValid(parseISO(value as string))) {
+    return parseISO(value)
+  }
+  let date: Date | undefined = undefined
+  SIMPLIFIED_ISO_8601_FORMAT.some((formatString: string) => {
+    date = parse(
+      value as string,
+      formatString.replace(/T/, `'T'`).replace(/Z$/, `'Z'`),
+      baseDateInstance
+    )
+    return isValid(date)
+  })
+  return date!
+}
+
 const invalidISOFormats = (value: Date | string): boolean => {
   if (isDateFns(value)) {
     return true
   }
-  if (isValid(parseISO(value as string))) {
-    return true
-  }
-  return SIMPLIFIED_ISO_8601_FORMAT.some((formatString: string) =>
-    isValid(
-      parse(
-        value as string,
-        formatString.replace(/T/, `'T'`).replace(/Z$/, `'Z'`),
-        baseDateInstance
-      )
-    )
-  )
+  return !!isValid(_parse(value as string))
 }
 
 /**
@@ -334,19 +339,25 @@ const formatDate = ({
   formatString,
   locale = `en-US`,
 }: IFormatDateArgs): string | number => {
-  if (date) {
-    const utc = addMinutes(date, date.getTimezoneOffset())
-    if (formatString) {
-      return format(utc, toSimpleUnicodeToken(formatString), {
-        locale: locales[locale],
-      })
-    } else if (fromNow) {
-      return formatDistanceToNow(utc, { locale: locales[locale] })
-    } else if (difference) {
-      return getDiff(utc, difference)
-    }
-  }
   const normalizedDate = JSON.parse(JSON.stringify(date))
+  const parsedDate = _parse(normalizedDate)
+  if (!parsedDate) {
+    return normalizedDate
+  }
+  if (!isValid(parsedDate)) {
+    return parsedDate.toLocaleString() // return Invalid Date
+  }
+
+  const utc = addMinutes(parsedDate, parsedDate.getTimezoneOffset())
+  if (formatString) {
+    return format(utc, toSimpleUnicodeToken(formatString), {
+      locale: locales[locale],
+    })
+  } else if (fromNow) {
+    return formatDistanceToNow(utc, { locale: locales[locale] })
+  } else if (difference) {
+    return getDiff(utc, difference)
+  }
   return normalizedDate
 }
 

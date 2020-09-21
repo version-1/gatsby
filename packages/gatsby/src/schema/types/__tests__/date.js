@@ -437,6 +437,6 @@ describe(`dateResolver`, () => {
           fieldName: `date`,
         }
       )
-    ).toEqual(`Invalid date`)
+    ).toEqual(`Invalid Date`)
   })
 })
