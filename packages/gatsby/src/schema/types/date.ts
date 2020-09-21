@@ -13,10 +13,10 @@ import differenceInHours from "date-fns/differenceInHours"
 import differenceInMinutes from "date-fns/differenceInMinutes"
 import differenceInSeconds from "date-fns/differenceInSeconds"
 import differenceInMilliseconds from "date-fns/differenceInMilliseconds"
+import addMinutes from "date-fns/addMinutes"
+import * as locales from "date-fns/locale"
 import { GraphQLScalarType, Kind, GraphQLFieldConfig } from "graphql"
 import { oneLine } from "common-tags"
-import * as locales from "date-fns/locale"
-import { addMinutes } from "date-fns"
 
 type Difference =
   | "quarter"
