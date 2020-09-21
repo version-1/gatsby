@@ -1,5 +1,8 @@
-import isFnsDate from "date-fns/isDate"
+import parse from "date-fns/parse"
+import parseISO from "date-fns/parseISO"
 import format from "date-fns/format"
+import isDateFns from "date-fns/isDate"
+import isValid from "date-fns/isValid"
 import formatDistanceToNow from "date-fns/formatDistanceToNow"
 import differenceInYears from "date-fns/differenceInYears"
 import differenceInQuarters from "date-fns/differenceInQuarters"
@@ -83,7 +86,7 @@ const ISO_8601_FORMAT = [
   `YYYY-MM-DDTHHmmss.SSS`,
   `YYYY-MM-DDTHH:mm:ss.SSSSSS`,
   `YYYY-MM-DDTHHmmss.SSSSSS`,
-  // `YYYY-MM-DDTHH:mm:ss.SSSSSSSSS`,
+  `YYYY-MM-DDTHH:mm:ss.SSSSSSSSS`,
   // `YYYY-MM-DDTHHmmss.SSSSSSSSS`,
 
   // Local Time (Omit T)
@@ -96,7 +99,7 @@ const ISO_8601_FORMAT = [
   `YYYY-MM-DD HHmmss.SSS`,
   `YYYY-MM-DD HH:mm:ss.SSSSSS`,
   `YYYY-MM-DD HHmmss.SSSSSS`,
-  // `YYYY-MM-DD HH:mm:ss.SSSSSSSSS`,
+  `YYYY-MM-DD HH:mm:ss.SSSSSSSSS`,
   // `YYYY-MM-DD HHmmss.SSSSSSSSS`,
 
   // Coordinated Universal Time (UTC)
@@ -135,6 +138,8 @@ const ISO_8601_FORMAT = [
   `YYYY-MM-DD HHmmss.SSS Z`,
   `YYYY-MM-DD HH:mm:ss.SSSSSS Z`,
   `YYYY-MM-DD HHmmss.SSSSSS Z`,
+  `YYYY-MM-DD HH:mm:ss.SSSSSSSSS Z`,
+  `YYYY-MM-DD HHmmss.SSSSSSSSS Z`,
 
   `YYYY-[W]WW`,
   `YYYY[W]WW`,
@@ -143,6 +148,16 @@ const ISO_8601_FORMAT = [
   `YYYY-DDDD`,
   `YYYYDDDD`,
 ]
+
+// ref: https://github.com/date-fns/date-fns/blob/master/docs/unicodeTokens.md
+const toSimpleUnicodeToken = (formatString: string): string =>
+  [`YYYY`, `YY`, `DD`, `D`].reduce(
+    (acc, target) =>
+      acc.replace(new RegExp(target, `g`), target.toLocaleLowerCase()),
+    formatString
+  )
+
+const SIMPLIFIED_ISO_8601_FORMAT = ISO_8601_FORMAT.map(toSimpleUnicodeToken)
 
 export const GraphQLDate = new GraphQLScalarType({
   name: `Date`,
@@ -208,6 +223,26 @@ const looksLikeDateStartRegex = /^\d{4}/
 // this regex makes sure the last characters are a number or the letter Z
 const looksLikeDateEndRegex = /(\d|Z)$/
 
+const baseDateInstance = new Date()
+
+const invalidISOFormats = (value: Date | string): boolean => {
+  if (isDateFns(value)) {
+    return true
+  }
+  if (isValid(parseISO(value as string))) {
+    return true
+  }
+  return SIMPLIFIED_ISO_8601_FORMAT.some((formatString: string) =>
+    isValid(
+      parse(
+        value as string,
+        formatString.replace(/T/, `'T'`).replace(/Z$/, `'Z'`),
+        baseDateInstance
+      )
+    )
+  )
+}
+
 /**
  * looksLikeADate isn't a 100% valid check if it is a real date but at least it's something that looks like a date.
  * It won't catch values like 2010-02-30
@@ -246,7 +281,7 @@ export function looksLikeADate(value?: string): boolean {
  * @return {boolean}
  */
 export function isDate(value: Date | string | number): boolean {
-  return typeof value !== `number` && isFnsDate(value)
+  return typeof value !== `number` && invalidISOFormats(value)
 }
 
 const getDiff = (date: Date, difference: Difference): number => {
@@ -291,14 +326,6 @@ const getDiff = (date: Date, difference: Difference): number => {
       return 0
   }
 }
-
-// ref: https://github.com/date-fns/date-fns/blob/master/docs/unicodeTokens.md
-const toSimpleUnicodeToken = (formatString: string): string =>
-  [`YYYY`, `YY`, `DD`, `D`].reduce(
-    (acc, target) =>
-      acc.replace(new RegExp(target, `g`), target.toLocaleLowerCase()),
-    formatString
-  )
 
 const formatDate = ({
   date,
