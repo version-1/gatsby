@@ -190,8 +190,6 @@ module.exports = async (
 
   function getPlugins() {
     let configPlugins = [
-      plugins.moment(),
-
       // Add a few global variables. Set NODE_ENV to production (enables
       // optimizations for React) and what the link prefix is (__PATH_PREFIX__).
       plugins.define({
