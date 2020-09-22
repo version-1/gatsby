@@ -120,8 +120,6 @@ describe(`isDate`, () => {
     `2010-01-40T23:59:60+00:00`,
     `2010-01-40T23:59:59.9999+00:00`,
     `2010-01-40T23:59:59,9999+00:00`,
-    `2012-04-01T00:00:00-5:00`, // should be -05:00
-    `2012-04-01T00:00:00+1:00`, // should be +01:00
     undefined,
     `undefined`,
     null,
@@ -225,8 +223,6 @@ describe(`looksLikeADate`, () => {
     `2010-00-00T+00:00`,
     `2010-01-00T+00:00`,
     `2010-01-40T+00:00`,
-    `2012-04-01T00:00:00-5:00`, // should be -05:00
-    `2012-04-01T00:00:00+1:00`, // should be +01:00
     undefined,
     `undefined`,
     null,
@@ -441,6 +437,6 @@ describe(`dateResolver`, () => {
           fieldName: `date`,
         }
       )
-    ).toEqual(`Invalid date`)
+    ).toEqual(`Invalid Date`)
   })
 })

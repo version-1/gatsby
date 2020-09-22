@@ -1158,7 +1158,7 @@ describe(`GraphQL field extensions`, () => {
           },
           {
             date: null,
-            reverse: `Invalid date`,
+            reverse: `Invalid Date`,
           },
         ],
       },
@@ -1203,7 +1203,7 @@ describe(`GraphQL field extensions`, () => {
         allAnotherTest {
           nodes {
             date(formatString: "MM/DD/YYYY", match: "0", replaceWith: "1978-09-26")
-            reverse(formatString: "MM/DD/YYYY", match: "Invalid date", replaceWith: "WRONG!")
+            reverse(formatString: "MM/DD/YYYY", match: "Invalid Date", replaceWith: "WRONG!")
           }
         }
       }
@@ -1640,7 +1640,7 @@ describe(`GraphQL field extensions`, () => {
           },
           {
             id: `test2`,
-            fieldFromParent: `Invalid date`,
+            fieldFromParent: `Invalid Date`,
           },
           {
             id: `test3`,

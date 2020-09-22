@@ -1446,7 +1446,6 @@ export interface WebpackPlugins {
   minifyJs: Function
   minifyCss: Function
   extractText: Function
-  moment: Function
   [key: string]: Function
 }
 

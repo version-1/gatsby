@@ -1,6 +1,6 @@
 import _ from "lodash"
 import { oneLine } from "common-tags"
-import moment from "moment"
+import differenceInMilliseconds from "date-fns/differenceInMilliseconds"
 
 import { IGatsbyState, ActionsUnion } from "../types"
 
@@ -49,7 +49,7 @@ export const jobsReducer = (
       state.done.push({
         ...job,
         completedAt,
-        runTime: moment(completedAt).diff(moment(job.createdAt)),
+        runTime: differenceInMilliseconds(completedAt, job.createdAt),
       })
 
       return state

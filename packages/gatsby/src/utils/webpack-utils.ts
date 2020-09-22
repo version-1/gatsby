@@ -104,7 +104,6 @@ interface IRuleUtils {
 type PluginUtils = BuiltinPlugins & {
   extractText: PluginFactory
   uglify: PluginFactory
-  moment: PluginFactory
   extractStats: PluginFactory
   minifyJs: PluginFactory
   minifyCss: PluginFactory
@@ -698,8 +697,6 @@ export const createWebpackUtils = (
       chunkFilename: `[name].[contenthash].css`,
       ...options,
     })
-
-  plugins.moment = (): Plugin => plugins.ignore(/^\.\/locale$/, /moment$/)
 
   plugins.extractStats = (): GatsbyWebpackStatsExtractor =>
     new GatsbyWebpackStatsExtractor()

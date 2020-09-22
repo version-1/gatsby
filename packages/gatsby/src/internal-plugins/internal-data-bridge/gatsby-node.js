@@ -1,4 +1,5 @@
-const moment = require(`moment`)
+const subSeconds = require(`date-fns/subSeconds`)
+const startOfSecond = require(`date-fns/startOfSecond`)
 const chokidar = require(`chokidar`)
 const systemPath = require(`path`)
 const _ = require(`lodash`)
@@ -105,10 +106,9 @@ exports.sourceNodes = ({ createContentDigest, actions, store }) => {
 
   createGatsbyConfigNode(state.config)
 
-  const buildTime = moment()
-    .subtract(process.uptime(), `seconds`)
-    .startOf(`second`)
-    .toJSON()
+  const buildTime = startOfSecond(
+    subSeconds(new Date(), process.uptime())
+  ).toJSON()
 
   const metadataNode = { buildTime }
 
