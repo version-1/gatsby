@@ -372,16 +372,16 @@ export const getDateResolver = (
       formatString: {
         type: `String`,
         description: oneLine`
-        Format the date using Moment.js' date tokens, e.g.
-        \`date(formatString: "YYYY MMMM DD")\`.
-        See https://momentjs.com/docs/#/displaying/format/
+        Format the date using date-fns date tokens, e.g.
+        \`date(formatString: "yyyy MMMM dd")\`.
+        See https://date-fns.org/v2.16.1/docs/format
         for documentation for different tokens.`,
         defaultValue: formatString,
       },
       fromNow: {
         type: `Boolean`,
         description: oneLine`
-        Returns a string generated with Moment.js' \`fromNow\` function`,
+        Returns a string generated with date-fns' \`formatDistanceToNow\` function`,
         defaultValue: fromNow,
       },
       difference: {
@@ -396,7 +396,7 @@ export const getDateResolver = (
       locale: {
         type: `String`,
         description: oneLine`
-        Configures the locale Moment.js will use to format the date.`,
+        Configures the locale date-fns will use to format the date.`,
         defaultValue: locale,
       },
     },
